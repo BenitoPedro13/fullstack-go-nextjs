@@ -1,0 +1,1 @@
+FullStack Go/NextJS Project
