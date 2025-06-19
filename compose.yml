@@ -1,30 +1,49 @@
-services:
-  goapp:
-    container_name: goapp
-    image: goapp:1.0.1
-    build:
-      context: .
-      dockerfile: backend/go.dockerfile
-    environment:
-      DATABASE_URL: postgres://postgres:postgres@db:5432/postgres?sslmode=disable
-    ports:
-      - 3001:3001
-    depends_on:
-      - db
-    restart: always
+version: '3.8'
 
-  db:
-    container_name: db
-    image: postgres:16-alpine
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: fullstack-postgres
     environment:
+      POSTGRES_DB: fullstack_db
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: postgres
     ports:
-      - 5432:5432
-    restart: always
+      - "5432:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: go.dockerfile
+    container_name: fullstack-backend
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/fullstack_db?sslmode=disable
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: fullstack-frontend
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:3001
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    restart: unless-stopped
 
 volumes:
-  pgdata: {}
+  postgres_data: {}
