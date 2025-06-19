@@ -99,3 +99,20 @@ func getUsers(db *sql.DB) http.HandlerFunc {
 		json.NewEncoder(w).Encode(users)
 	}
 }
+
+// get user by id
+func getUser(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		id := vars["id"]
+
+		var user User
+		err := db.QueryRow("SELECT * FROM users WHERE id = $1", id).Scan(&user.ID, &user.Name, &user.Email)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
+
+		json.NewEncoder(w).Encode(user)
+	}
+}
