@@ -1,9 +1,5 @@
 import Link from 'next/link';
-import dynamic from 'next/dynamic';
-
-const DynamicThemeSwitch = dynamic(() => import('./theme-switch'), {
-  ssr: false,
-});
+import { DynamicThemeSwitch } from './theme-switch';
 
 export default function Header() {
   return (

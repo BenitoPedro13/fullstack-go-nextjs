@@ -3,6 +3,11 @@
 import { useTheme } from 'next-themes';
 import * as SegmentedControl from '@/components/ui/segmented-control';
 import { RiEqualizer3Fill, RiMoonLine, RiSunLine } from '@remixicon/react';
+import dynamic from 'next/dynamic';
+
+export const DynamicThemeSwitch = dynamic(() => import('./theme-switch'), {
+  ssr: false,
+});
 
 export default function ThemeSwitch() {
   const { theme, setTheme } = useTheme();
