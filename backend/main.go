@@ -110,7 +110,24 @@ func getUser(db *sql.DB) http.HandlerFunc {
 		err := db.QueryRow("SELECT * FROM users WHERE id = $1", id).Scan(&user.ID, &user.Name, &user.Email)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)
+			log.Fatal(err)
 			return
+		}
+
+		json.NewEncoder(w).Encode(user)
+	}
+}
+
+// create user
+func createUser(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var user User
+		json.NewDecoder(r.Body).Decode(&user)
+
+		err := db.QueryRow("INSERT INTO users (name, email) VALUES ($1, $2) RETURNING id", user.Name, user.Email).Scan(&user.ID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			log.Fatal(err)
 		}
 
 		json.NewEncoder(w).Encode(user)
